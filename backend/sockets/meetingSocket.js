@@ -13,7 +13,15 @@ const meetingSocket = (io, socket) => {
                 return;
             }
 
+            const existingUsers = [
+                ...(io.sockets.adapter.rooms.get(roomId) || []),
+            ];
+
             socket.join(roomId);
+
+            socket.emit("existing-users", {
+                users: existingUsers,
+            });
 
             socket.to(roomId).emit("user-joined", {
                 userId,
