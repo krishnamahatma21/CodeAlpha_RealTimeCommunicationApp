@@ -82,6 +82,14 @@ const meetingSocket = (io, socket) => {
         });
     });
 
+    // File Sharing
+    socket.on("file-share", ({ roomId, file }) => {
+        socket.to(roomId).emit("file-received", {
+            file,
+            senderSocketId: socket.id,
+        });
+    });
+
     // Disconnect Handling
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);

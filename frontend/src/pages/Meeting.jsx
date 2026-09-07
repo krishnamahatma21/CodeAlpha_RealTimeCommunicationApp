@@ -12,6 +12,7 @@ const Meeting = () => {
     const localStreamRef = useRef(null);
     const peerConnectionsRef = useRef({});
     const screenStreamRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const [localStream, setLocalStream] = useState(null);
     const [localPreviewStream, setLocalPreviewStream] = useState(null);
@@ -23,6 +24,8 @@ const Meeting = () => {
     const [cameraOn, setCameraOn] = useState(true);
     const [micOn, setMicOn] = useState(true);
     const [screenSharing, setScreenSharing] = useState(false);
+
+    const [receivedFiles, setReceivedFiles] = useState([]);
 
     // Create WebRTC Peer Connection
     const createPeerConnection = (targetSocketId) => {
@@ -265,6 +268,24 @@ const Meeting = () => {
             setMessage(data.message);
         };
 
+        // Receive shared file
+        const handleFileReceived = (data) => {
+            setReceivedFiles((prev) => [
+                ...prev,
+                {
+                    id: Date.now() + Math.random(),
+                    name: data.file.name,
+                    type: data.file.type,
+                    size: data.file.size,
+                    data: data.file.data,
+                },
+            ]);
+
+            setMessage(
+                `File received: ${data.file.name}`
+            );
+        };
+
         socket.on(
             "meeting-joined",
             handleMeetingJoined
@@ -303,6 +324,11 @@ const Meeting = () => {
         socket.on(
             "meeting-error",
             handleMeetingError
+        );
+
+        socket.on(
+            "file-received",
+            handleFileReceived
         );
 
         return () => {
@@ -349,6 +375,11 @@ const Meeting = () => {
             socket.off(
                 "meeting-error",
                 handleMeetingError
+            );
+
+            socket.off(
+                "file-received",
+                handleFileReceived
             );
 
             Object.values(
@@ -410,7 +441,6 @@ const Meeting = () => {
 
             screenStreamRef.current = screenStream;
 
-            // Replace camera video track with screen track
             Object.values(
                 peerConnectionsRef.current
             ).forEach((peerConnection) => {
@@ -430,7 +460,6 @@ const Meeting = () => {
                 }
             });
 
-            // Show shared screen in local preview
             const previewStream = new MediaStream();
 
             previewStream.addTrack(screenTrack);
@@ -446,7 +475,6 @@ const Meeting = () => {
             setScreenSharing(true);
             setMessage("You are sharing your screen.");
 
-            // Browser's "Stop sharing" button
             screenTrack.onended = () => {
                 stopScreenSharing();
             };
@@ -471,7 +499,6 @@ const Meeting = () => {
             return;
         }
 
-        // Restore camera video track
         Object.values(
             peerConnectionsRef.current
         ).forEach((peerConnection) => {
@@ -505,6 +532,71 @@ const Meeting = () => {
         setLocalPreviewStream(localStream);
         setScreenSharing(false);
         setMessage("Screen sharing stopped.");
+    };
+
+    // Open file picker
+    const selectFile = () => {
+        fileInputRef.current?.click();
+    };
+
+    // Send file
+    const handleFileChange = (event) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        // Keep this basic Socket.IO version for small files.
+        const maxFileSize = 500 * 1024;
+
+        if (file.size > maxFileSize) {
+            setMessage(
+                "For this version, please select a file smaller than 500 KB."
+            );
+
+            event.target.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            socket.emit("file-share", {
+                roomId,
+                file: {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: reader.result,
+                },
+            });
+
+            setMessage(
+                `File sent: ${file.name}`
+            );
+        };
+
+        reader.onerror = () => {
+            setMessage("Unable to read the selected file.");
+        };
+
+        reader.readAsDataURL(file);
+
+        // Allow selecting the same file again
+        event.target.value = "";
+    };
+
+    // Download received file
+    const downloadFile = (file) => {
+        const link = document.createElement("a");
+
+        link.href = file.data;
+        link.download = file.name;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const leaveMeeting = () => {
@@ -584,6 +676,52 @@ const Meeting = () => {
                 <button onClick={stopScreenSharing}>
                     🛑 Stop Sharing
                 </button>
+            )}
+
+            <hr />
+
+            <h2>📁 File Sharing</h2>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+            />
+
+            <button onClick={selectFile}>
+                📎 Select & Send File
+            </button>
+
+            <p>
+                Maximum file size: 500 KB
+            </p>
+
+            {receivedFiles.length > 0 && (
+                <div>
+                    <h3>📥 Received Files</h3>
+
+                    {receivedFiles.map((file) => (
+                        <div key={file.id}>
+                            <span>
+                                {file.name} (
+                                {Math.round(
+                                    file.size / 1024
+                                )} KB)
+                            </span>
+
+                            {" "}
+
+                            <button
+                                onClick={() =>
+                                    downloadFile(file)
+                                }
+                            >
+                                ⬇️ Download
+                            </button>
+                        </div>
+                    ))}
+                </div>
             )}
 
             <hr />
