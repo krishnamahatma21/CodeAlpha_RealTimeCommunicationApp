@@ -27,6 +27,9 @@ const Meeting = () => {
 
     const [receivedFiles, setReceivedFiles] = useState([]);
 
+    const canvasRef = useRef(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+
     // Create WebRTC Peer Connection
     const createPeerConnection = (targetSocketId) => {
         if (peerConnectionsRef.current[targetSocketId]) {
@@ -198,7 +201,7 @@ const Meeting = () => {
             try {
                 const peerConnection =
                     peerConnectionsRef.current[
-                        senderSocketId
+                    senderSocketId
                     ];
 
                 if (!peerConnection) {
@@ -223,7 +226,7 @@ const Meeting = () => {
             try {
                 const peerConnection =
                     peerConnectionsRef.current[
-                        senderSocketId
+                    senderSocketId
                     ];
 
                 if (!peerConnection) {
@@ -266,6 +269,39 @@ const Meeting = () => {
 
         const handleMeetingError = (data) => {
             setMessage(data.message);
+        };
+
+        const handleWhiteboardDraw = ({ data }) => {
+            const canvas = canvasRef.current;
+
+            if (!canvas) {
+                return;
+            }
+
+            const context = canvas.getContext("2d");
+
+            context.lineWidth = 3;
+            context.lineCap = "round";
+
+            context.lineTo(data.x, data.y);
+            context.stroke();
+        };
+
+        const handleWhiteboardClear = () => {
+            const canvas = canvasRef.current;
+
+            if (!canvas) {
+                return;
+            }
+
+            const context = canvas.getContext("2d");
+
+            context.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
         };
 
         // Receive shared file
@@ -327,6 +363,16 @@ const Meeting = () => {
         );
 
         socket.on(
+            "whiteboard-draw",
+            handleWhiteboardDraw
+        );
+
+        socket.on(
+            "whiteboard-clear",
+            handleWhiteboardClear
+        );
+
+        socket.on(
             "file-received",
             handleFileReceived
         );
@@ -378,6 +424,16 @@ const Meeting = () => {
             );
 
             socket.off(
+                "whiteboard-draw",
+                handleWhiteboardDraw
+            );
+
+            socket.off(
+                "whiteboard-clear",
+                handleWhiteboardClear
+            );
+
+            socket.off(
                 "file-received",
                 handleFileReceived
             );
@@ -391,6 +447,82 @@ const Meeting = () => {
             peerConnectionsRef.current = {};
         };
     }, [roomId, user, localStream]);
+
+    // Get mouse/touch position on canvas
+    const getCanvasPosition = (event) => {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+        };
+    };
+
+    // Start drawing
+    const startDrawing = (event) => {
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+
+        const { x, y } = getCanvasPosition(event);
+
+        context.beginPath();
+        context.moveTo(x, y);
+
+        setIsDrawing(true);
+    };
+
+    // Draw on canvas
+    const draw = (event) => {
+        if (!isDrawing) {
+            return;
+        }
+
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+
+        const { x, y } = getCanvasPosition(event);
+
+        context.lineWidth = 3;
+        context.lineCap = "round";
+
+        context.lineTo(x, y);
+        context.stroke();
+
+        socket.emit("whiteboard-draw", {
+            roomId,
+            data: {
+                x,
+                y,
+            },
+        });
+    };
+
+    // Stop drawing
+    const stopDrawing = () => {
+        setIsDrawing(false);
+    };
+
+    const clearWhiteboard = () => {
+        const canvas = canvasRef.current;
+
+        if (!canvas) {
+            return;
+        }
+
+        const context = canvas.getContext("2d");
+
+        context.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        socket.emit("whiteboard-clear", {
+            roomId,
+        });
+    };
 
     // Toggle Camera
     const toggleCamera = () => {
@@ -725,6 +857,30 @@ const Meeting = () => {
             )}
 
             <hr />
+
+            <h2>🎨 Collaborative Whiteboard</h2>
+
+            <canvas
+                ref={canvasRef}
+                width={800}
+                height={500}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                style={{
+                    border: "2px solid black",
+                    backgroundColor: "white",
+                    cursor: "crosshair",
+                    display: "block",
+                }}
+            />
+
+            <br />
+
+            <button onClick={clearWhiteboard}>
+                🧹 Clear Whiteboard
+            </button>
 
             <h2>Remote Videos</h2>
 
