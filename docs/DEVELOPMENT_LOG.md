@@ -20,3 +20,13 @@
 - Integrated Socket.IO with Express.
 - Configured Socket.IO CORS.
 - Added connection and disconnection events.
+
+## Day 4 — Meeting Management
+
+- Created Meeting Mongoose model.
+- Added unique meeting room IDs.
+- Implemented Create Meeting API.
+- Added authenticated meeting creation.
+- Implemented Join Meeting API.
+- Added meeting participant management.
+- Tested meeting APIs using Thunder Client.
