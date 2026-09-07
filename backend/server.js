@@ -36,8 +36,12 @@ const io = new Server(server, {
     },
 });
 
+const meetingSocket = require("./sockets/meetingSocket");
+
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
+
+    meetingSocket(io, socket);
 
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
