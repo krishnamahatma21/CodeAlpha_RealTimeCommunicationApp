@@ -11,14 +11,18 @@ const Meeting = () => {
 
     const localStreamRef = useRef(null);
     const peerConnectionsRef = useRef({});
+    const screenStreamRef = useRef(null);
 
     const [localStream, setLocalStream] = useState(null);
+    const [localPreviewStream, setLocalPreviewStream] = useState(null);
+
     const [remoteStreams, setRemoteStreams] = useState({});
     const [participants, setParticipants] = useState(0);
     const [message, setMessage] = useState("");
 
     const [cameraOn, setCameraOn] = useState(true);
     const [micOn, setMicOn] = useState(true);
+    const [screenSharing, setScreenSharing] = useState(false);
 
     // Create WebRTC Peer Connection
     const createPeerConnection = (targetSocketId) => {
@@ -74,7 +78,9 @@ const Meeting = () => {
                     });
 
                 localStreamRef.current = stream;
+
                 setLocalStream(stream);
+                setLocalPreviewStream(stream);
             } catch (error) {
                 console.error(
                     "Camera/Microphone error:",
@@ -90,6 +96,12 @@ const Meeting = () => {
         startMedia();
 
         return () => {
+            if (screenStreamRef.current) {
+                screenStreamRef.current
+                    .getTracks()
+                    .forEach((track) => track.stop());
+            }
+
             if (localStreamRef.current) {
                 localStreamRef.current
                     .getTracks()
@@ -385,7 +397,123 @@ const Meeting = () => {
         setMicOn(audioTrack.enabled);
     };
 
+    // Start Screen Sharing
+    const startScreenSharing = async () => {
+        try {
+            const screenStream =
+                await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                });
+
+            const screenTrack =
+                screenStream.getVideoTracks()[0];
+
+            screenStreamRef.current = screenStream;
+
+            // Replace camera video track with screen track
+            Object.values(
+                peerConnectionsRef.current
+            ).forEach((peerConnection) => {
+                const videoSender =
+                    peerConnection
+                        .getSenders()
+                        .find(
+                            (sender) =>
+                                sender.track?.kind ===
+                                "video"
+                        );
+
+                if (videoSender) {
+                    videoSender.replaceTrack(
+                        screenTrack
+                    );
+                }
+            });
+
+            // Show shared screen in local preview
+            const previewStream = new MediaStream();
+
+            previewStream.addTrack(screenTrack);
+
+            const audioTrack =
+                localStreamRef.current?.getAudioTracks()[0];
+
+            if (audioTrack) {
+                previewStream.addTrack(audioTrack);
+            }
+
+            setLocalPreviewStream(previewStream);
+            setScreenSharing(true);
+            setMessage("You are sharing your screen.");
+
+            // Browser's "Stop sharing" button
+            screenTrack.onended = () => {
+                stopScreenSharing();
+            };
+        } catch (error) {
+            console.error(
+                "Screen sharing error:",
+                error
+            );
+
+            setMessage(
+                "Screen sharing was cancelled or unavailable."
+            );
+        }
+    };
+
+    // Stop Screen Sharing
+    const stopScreenSharing = async () => {
+        const cameraTrack =
+            localStreamRef.current?.getVideoTracks()[0];
+
+        if (!cameraTrack) {
+            return;
+        }
+
+        // Restore camera video track
+        Object.values(
+            peerConnectionsRef.current
+        ).forEach((peerConnection) => {
+            const videoSender =
+                peerConnection
+                    .getSenders()
+                    .find(
+                        (sender) =>
+                            sender.track?.kind ===
+                            "video"
+                    );
+
+            if (videoSender) {
+                videoSender.replaceTrack(
+                    cameraTrack
+                );
+            }
+        });
+
+        if (screenStreamRef.current) {
+            screenStreamRef.current
+                .getTracks()
+                .forEach((track) => {
+                    track.onended = null;
+                    track.stop();
+                });
+
+            screenStreamRef.current = null;
+        }
+
+        setLocalPreviewStream(localStream);
+        setScreenSharing(false);
+        setMessage("Screen sharing stopped.");
+    };
+
     const leaveMeeting = () => {
+        if (screenStreamRef.current) {
+            screenStreamRef.current
+                .getTracks()
+                .forEach((track) => track.stop());
+        }
+
         socket.emit("leave-meeting", {
             roomId,
             userId: user.id,
@@ -421,9 +549,9 @@ const Meeting = () => {
 
             <h2>Your Video</h2>
 
-            {localStream ? (
+            {localPreviewStream ? (
                 <VideoPlayer
-                    stream={localStream}
+                    stream={localPreviewStream}
                     muted={true}
                 />
             ) : (
@@ -445,6 +573,18 @@ const Meeting = () => {
                     ? "🎤 Mute Microphone"
                     : "🎤 Unmute Microphone"}
             </button>
+
+            {" "}
+
+            {!screenSharing ? (
+                <button onClick={startScreenSharing}>
+                    🖥️ Share Screen
+                </button>
+            ) : (
+                <button onClick={stopScreenSharing}>
+                    🛑 Stop Sharing
+                </button>
+            )}
 
             <hr />
 
