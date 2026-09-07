@@ -28,7 +28,12 @@ const meetingSocket = (io, socket) => {
                 socketId: socket.id,
             });
 
-            const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
+            const roomSize =
+                io.sockets.adapter.rooms.get(roomId)?.size || 0;
+
+            io.to(roomId).emit("participant-count", {
+                count: roomSize,
+            });
 
             socket.emit("meeting-joined", {
                 roomId,
@@ -55,7 +60,16 @@ const meetingSocket = (io, socket) => {
             socketId: socket.id,
         });
 
-        console.log(`User ${socket.userId} left room ${roomId}`);
+        const roomSize =
+            io.sockets.adapter.rooms.get(roomId)?.size || 0;
+
+        io.to(roomId).emit("participant-count", {
+            count: roomSize,
+        });
+
+        console.log(
+            `User ${socket.userId} left room ${roomId}`
+        );
     });
 
     // WebRTC Offer

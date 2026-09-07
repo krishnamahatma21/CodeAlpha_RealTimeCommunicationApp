@@ -159,7 +159,11 @@ const Meeting = () => {
         };
 
         const handleUserJoined = () => {
-            setParticipants((count) => count + 1);
+            setMessage("A new participant joined the meeting.");
+        };
+
+        const handleParticipantCount = ({ count }) => {
+            setParticipants(count);
         };
 
         const handleWebRTCOffer = async ({
@@ -260,10 +264,6 @@ const Meeting = () => {
                 delete updated[socketId];
                 return updated;
             });
-
-            setParticipants((count) =>
-                Math.max(0, count - 1)
-            );
         };
 
         const handleMeetingError = (data) => {
@@ -337,6 +337,11 @@ const Meeting = () => {
         );
 
         socket.on(
+            "participant-count",
+            handleParticipantCount
+        );
+
+        socket.on(
             "webrtc-offer",
             handleWebRTCOffer
         );
@@ -394,6 +399,11 @@ const Meeting = () => {
             socket.off(
                 "user-joined",
                 handleUserJoined
+            );
+
+            socket.off(
+                "participant-count",
+                handleParticipantCount
             );
 
             socket.off(
@@ -735,11 +745,6 @@ const Meeting = () => {
                 .getTracks()
                 .forEach((track) => track.stop());
         }
-
-        socket.emit("leave-meeting", {
-            roomId,
-            userId: user.id,
-        });
 
         Object.values(
             peerConnectionsRef.current
