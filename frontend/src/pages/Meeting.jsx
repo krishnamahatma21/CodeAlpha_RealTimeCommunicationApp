@@ -17,6 +17,9 @@ const Meeting = () => {
     const [participants, setParticipants] = useState(0);
     const [message, setMessage] = useState("");
 
+    const [cameraOn, setCameraOn] = useState(true);
+    const [micOn, setMicOn] = useState(true);
+
     // Create WebRTC Peer Connection
     const createPeerConnection = (targetSocketId) => {
         if (peerConnectionsRef.current[targetSocketId]) {
@@ -25,7 +28,6 @@ const Meeting = () => {
 
         const peerConnection = new RTCPeerConnection();
 
-        // Add local camera and microphone tracks
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach((track) => {
                 peerConnection.addTrack(
@@ -35,7 +37,6 @@ const Meeting = () => {
             });
         }
 
-        // Receive remote stream
         peerConnection.ontrack = (event) => {
             const [remoteStream] = event.streams;
 
@@ -47,7 +48,6 @@ const Meeting = () => {
             }
         };
 
-        // Send ICE candidate
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 socket.emit("webrtc-ice-candidate", {
@@ -63,7 +63,7 @@ const Meeting = () => {
         return peerConnection;
     };
 
-    // Start local camera and microphone
+    // Start Camera + Microphone
     useEffect(() => {
         const startMedia = async () => {
             try {
@@ -98,25 +98,22 @@ const Meeting = () => {
         };
     }, []);
 
-    // Socket + WebRTC logic
+    // Socket + WebRTC
     useEffect(() => {
         if (!roomId || !user || !localStream) {
             return;
         }
 
-        // Join meeting
         socket.emit("join-meeting", {
             roomId,
             userId: user.id,
         });
 
-        // Meeting joined
         const handleMeetingJoined = (data) => {
             setParticipants(data.participantCount);
             setMessage("You joined the meeting.");
         };
 
-        // Existing users
         const handleExistingUsers = async (data) => {
             for (const targetSocketId of data.users) {
                 try {
@@ -144,12 +141,10 @@ const Meeting = () => {
             }
         };
 
-        // New user joined
         const handleUserJoined = () => {
             setParticipants((count) => count + 1);
         };
 
-        // Receive WebRTC Offer
         const handleWebRTCOffer = async ({
             offer,
             senderSocketId,
@@ -181,7 +176,6 @@ const Meeting = () => {
             }
         };
 
-        // Receive WebRTC Answer
         const handleWebRTCAnswer = async ({
             answer,
             senderSocketId,
@@ -207,7 +201,6 @@ const Meeting = () => {
             }
         };
 
-        // Receive ICE Candidate
         const handleICECandidate = async ({
             candidate,
             senderSocketId,
@@ -233,7 +226,6 @@ const Meeting = () => {
             }
         };
 
-        // User left
         const handleUserLeft = ({ socketId }) => {
             const peerConnection =
                 peerConnectionsRef.current[socketId];
@@ -257,7 +249,6 @@ const Meeting = () => {
             );
         };
 
-        // Meeting error
         const handleMeetingError = (data) => {
             setMessage(data.message);
         };
@@ -358,6 +349,42 @@ const Meeting = () => {
         };
     }, [roomId, user, localStream]);
 
+    // Toggle Camera
+    const toggleCamera = () => {
+        if (!localStreamRef.current) {
+            return;
+        }
+
+        const videoTrack =
+            localStreamRef.current.getVideoTracks()[0];
+
+        if (!videoTrack) {
+            return;
+        }
+
+        videoTrack.enabled = !videoTrack.enabled;
+
+        setCameraOn(videoTrack.enabled);
+    };
+
+    // Toggle Microphone
+    const toggleMicrophone = () => {
+        if (!localStreamRef.current) {
+            return;
+        }
+
+        const audioTrack =
+            localStreamRef.current.getAudioTracks()[0];
+
+        if (!audioTrack) {
+            return;
+        }
+
+        audioTrack.enabled = !audioTrack.enabled;
+
+        setMicOn(audioTrack.enabled);
+    };
+
     const leaveMeeting = () => {
         socket.emit("leave-meeting", {
             roomId,
@@ -402,6 +429,22 @@ const Meeting = () => {
             ) : (
                 <p>Starting camera...</p>
             )}
+
+            <br />
+
+            <button onClick={toggleCamera}>
+                {cameraOn
+                    ? "📹 Turn Camera Off"
+                    : "📹 Turn Camera On"}
+            </button>
+
+            {" "}
+
+            <button onClick={toggleMicrophone}>
+                {micOn
+                    ? "🎤 Mute Microphone"
+                    : "🎤 Unmute Microphone"}
+            </button>
 
             <hr />
 
