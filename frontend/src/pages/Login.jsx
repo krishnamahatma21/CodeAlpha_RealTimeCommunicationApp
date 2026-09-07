@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import socket from "../services/socket";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -36,6 +37,12 @@ const Login = () => {
             // Save authentication data
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
+
+            socket.auth = {
+                token: response.data.token,
+            };
+
+            socket.connect();
 
             // Update AuthContext
             setUser(user);

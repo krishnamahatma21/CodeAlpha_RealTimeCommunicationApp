@@ -2,7 +2,7 @@ const Meeting = require("../models/Meeting");
 
 const meetingSocket = (io, socket) => {
     // Join meeting room
-    socket.on("join-meeting", async ({ roomId, userId }) => {
+    socket.on("join-meeting", async ({ roomId }) => {
         try {
             const meeting = await Meeting.findOne({ roomId });
 
@@ -24,7 +24,7 @@ const meetingSocket = (io, socket) => {
             });
 
             socket.to(roomId).emit("user-joined", {
-                userId,
+                userId: socket.userId,
                 socketId: socket.id,
             });
 
@@ -36,7 +36,7 @@ const meetingSocket = (io, socket) => {
                 participantCount: roomSize,
             });
 
-            console.log(`User ${userId} joined room ${roomId}`);
+            console.log(`User ${socket.userId} joined room ${roomId}`);
         } catch (error) {
             console.error("Join meeting socket error:", error);
 
@@ -47,15 +47,15 @@ const meetingSocket = (io, socket) => {
     });
 
     // Leave meeting room
-    socket.on("leave-meeting", ({ roomId, userId }) => {
+    socket.on("leave-meeting", ({ roomId }) => {
         socket.leave(roomId);
 
         socket.to(roomId).emit("user-left", {
-            userId,
+            userId: socket.userId,
             socketId: socket.id,
         });
 
-        console.log(`User ${userId} left room ${roomId}`);
+        console.log(`User ${socket.userId} left room ${roomId}`);
     });
 
     // WebRTC Offer

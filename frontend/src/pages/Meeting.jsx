@@ -124,7 +124,6 @@ const Meeting = () => {
 
         socket.emit("join-meeting", {
             roomId,
-            userId: user.id,
         });
 
         const handleMeetingJoined = (data) => {
@@ -380,7 +379,6 @@ const Meeting = () => {
         return () => {
             socket.emit("leave-meeting", {
                 roomId,
-                userId: user.id,
             });
 
             socket.off(
