@@ -90,6 +90,18 @@ const meetingSocket = (io, socket) => {
         });
     });
 
+    // Whiteboard Drawing
+    socket.on("whiteboard-draw", ({ roomId, data }) => {
+        socket.to(roomId).emit("whiteboard-draw", {
+            data,
+        });
+    });
+
+    // Clear Whiteboard
+    socket.on("whiteboard-clear", ({ roomId }) => {
+        socket.to(roomId).emit("whiteboard-clear");
+    });
+
     // Disconnect Handling
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
