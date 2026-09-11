@@ -45,47 +45,82 @@ const Register = () => {
     };
 
     return (
-        <div>
-            <h1>Register</h1>
+        <div className="auth-page">
+            <div className="auth-card">
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                />
+                <div className="auth-logo">
+                    ⚡
+                </div>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+                <h1>Create Account</h1>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
+                <p className="auth-subtitle">
+                    Join the Real-Time Communication App
+                </p>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Registering..." : "Register"}
+                <form
+                    className="auth-form"
+                    onSubmit={handleSubmit}
+                >
+                    <div className="auth-field">
+                        <label>Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Enter your name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="auth-field">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="auth-field">
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Create a password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <button
+                        className="auth-submit"
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? "Registering..." : "Create Account"}
+                    </button>
+                </form>
+
+                {message && (
+                    <p className="auth-message">
+                        {message}
+                    </p>
+                )}
+
+                <button
+                    className="auth-switch"
+                    onClick={() => navigate("/login")}
+                >
+                    Already have an account? Login
                 </button>
-            </form>
 
-            {message && <p>{message}</p>}
-
-            <button onClick={() => navigate("/login")}>
-                Already have an account? Login
-            </button>
+            </div>
         </div>
     );
 };

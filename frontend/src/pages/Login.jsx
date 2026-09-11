@@ -34,7 +34,6 @@ const Login = () => {
 
             const { token, user } = response.data;
 
-            // Save authentication data
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
 
@@ -44,7 +43,6 @@ const Login = () => {
 
             socket.connect();
 
-            // Update AuthContext
             setUser(user);
 
             setMessage("Login successful!");
@@ -62,38 +60,71 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h1>Login</h1>
+        <div className="auth-page">
+            <div className="auth-card">
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+                <div className="auth-logo">
+                    💬
+                </div>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
+                <h1>Welcome Back</h1>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Logging in..." : "Login"}
+                <p className="auth-subtitle">
+                    Login to continue to your communication dashboard.
+                </p>
+
+                <form className="auth-form" onSubmit={handleSubmit}>
+
+                    <div className="auth-field">
+                        <label>Email</label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="auth-field">
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <button
+                        className="auth-submit"
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? "Logging in..." : "Login"}
+                    </button>
+
+                </form>
+
+                {message && (
+                    <p className="auth-message">
+                        {message}
+                    </p>
+                )}
+
+                <button
+                    className="auth-switch"
+                    onClick={() => navigate("/register")}
+                >
+                    Don't have an account? Register
                 </button>
-            </form>
 
-            {message && <p>{message}</p>}
-
-            <button onClick={() => navigate("/register")}>
-                Don't have an account? Register
-            </button>
+            </div>
         </div>
     );
 };

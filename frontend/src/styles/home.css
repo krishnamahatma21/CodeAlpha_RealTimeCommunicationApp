@@ -1,0 +1,297 @@
+/* ================================
+   HOME PAGE
+================================ */
+
+.home-page {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(37, 99, 235, 0.16),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            rgba(20, 184, 166, 0.12),
+            transparent 35%
+        ),
+        #071225;
+}
+
+.home-container {
+    width: 100%;
+    max-width: 700px;
+}
+
+/* ================================
+   CARD
+================================ */
+
+.home-card {
+    position: relative;
+    padding: 55px 45px;
+
+    text-align: center;
+
+    background: rgba(15, 29, 52, 0.92);
+
+    border: 1px solid rgba(96, 165, 250, 0.18);
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.45),
+        0 0 40px rgba(37, 99, 235, 0.08);
+
+    backdrop-filter: blur(16px);
+
+    overflow: hidden;
+}
+
+.home-card::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 3px;
+
+    background: linear-gradient(
+        90deg,
+        #2563eb,
+        #06b6d4,
+        #14b8a6
+    );
+}
+
+/* ================================
+   ICON
+================================ */
+
+.home-icon {
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+
+    font-size: 32px;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #0ea5e9
+    );
+
+    box-shadow:
+        0 12px 30px rgba(37, 99, 235, 0.3);
+}
+
+/* ================================
+   TITLE
+================================ */
+
+.home-title {
+    margin: 0;
+
+    color: #f8fafc;
+
+    font-size: 32px;
+    font-weight: 750;
+
+    line-height: 1.25;
+
+    letter-spacing: -0.7px;
+}
+
+/* ================================
+   USER SECTION
+================================ */
+
+.home-user-section {
+    margin-top: 35px;
+}
+
+.home-welcome {
+    margin: 0 0 10px;
+
+    color: #e2e8f0;
+
+    font-size: 23px;
+    font-weight: 650;
+}
+
+.home-email {
+    margin: 0;
+
+    color: #94a3b8;
+
+    font-size: 15px;
+}
+
+/* ================================
+   STATUS
+================================ */
+
+.home-status {
+    width: fit-content;
+
+    margin: 22px auto 28px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 9px 15px;
+
+    color: #cbd5e1;
+
+    font-size: 13px;
+
+    background: rgba(20, 184, 166, 0.08);
+
+    border: 1px solid rgba(20, 184, 166, 0.18);
+
+    border-radius: 999px;
+}
+
+.home-online-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+}
+
+/* ================================
+   LOGOUT BUTTON
+================================ */
+
+.home-logout-button {
+    min-width: 150px;
+
+    padding: 13px 24px;
+
+    border: none;
+    border-radius: 10px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    box-shadow:
+        0 10px 25px rgba(37, 99, 235, 0.25);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+.home-logout-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 14px 32px rgba(37, 99, 235, 0.35);
+
+    filter: brightness(1.08);
+}
+
+.home-logout-button:active {
+    transform: translateY(0);
+}
+
+/* ================================
+   LOGIN MESSAGE
+================================ */
+
+.home-login-section {
+    margin-top: 30px;
+}
+
+.home-login-text {
+    margin: 0;
+
+    color: #94a3b8;
+
+    font-size: 15px;
+}
+
+/* ================================
+   TABLET
+================================ */
+
+@media (max-width: 768px) {
+    .home-card {
+        padding: 45px 30px;
+    }
+
+    .home-title {
+        font-size: 28px;
+    }
+
+    .home-welcome {
+        font-size: 21px;
+    }
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 480px) {
+    .home-page {
+        padding: 25px 15px;
+    }
+
+    .home-card {
+        padding: 40px 22px;
+
+        border-radius: 20px;
+    }
+
+    .home-icon {
+        width: 62px;
+        height: 62px;
+
+        font-size: 27px;
+
+        border-radius: 17px;
+    }
+
+    .home-title {
+        font-size: 24px;
+    }
+
+    .home-welcome {
+        font-size: 19px;
+    }
+
+    .home-email {
+        font-size: 14px;
+        word-break: break-word;
+    }
+}

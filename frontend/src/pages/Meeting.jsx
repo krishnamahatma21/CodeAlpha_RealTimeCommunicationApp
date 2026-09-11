@@ -159,7 +159,9 @@ const Meeting = () => {
         };
 
         const handleUserJoined = () => {
-            setMessage("A new participant joined the meeting.");
+            setMessage(
+                "A new participant joined the meeting."
+            );
         };
 
         const handleParticipantCount = ({ count }) => {
@@ -204,7 +206,7 @@ const Meeting = () => {
             try {
                 const peerConnection =
                     peerConnectionsRef.current[
-                    senderSocketId
+                        senderSocketId
                     ];
 
                 if (!peerConnection) {
@@ -229,7 +231,7 @@ const Meeting = () => {
             try {
                 const peerConnection =
                     peerConnectionsRef.current[
-                    senderSocketId
+                        senderSocketId
                     ];
 
                 if (!peerConnection) {
@@ -456,7 +458,7 @@ const Meeting = () => {
         };
     }, [roomId, user, localStream]);
 
-    // Get mouse/touch position on canvas
+    // Get canvas position
     const getCanvasPosition = (event) => {
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
@@ -480,7 +482,7 @@ const Meeting = () => {
         setIsDrawing(true);
     };
 
-    // Draw on canvas
+    // Draw
     const draw = (event) => {
         if (!isDrawing) {
             return;
@@ -511,6 +513,7 @@ const Meeting = () => {
         setIsDrawing(false);
     };
 
+    // Clear whiteboard
     const clearWhiteboard = () => {
         const canvas = canvasRef.current;
 
@@ -687,7 +690,6 @@ const Meeting = () => {
             return;
         }
 
-        // Keep this basic Socket.IO version for small files.
         const maxFileSize = 500 * 1024;
 
         if (file.size > maxFileSize) {
@@ -718,12 +720,13 @@ const Meeting = () => {
         };
 
         reader.onerror = () => {
-            setMessage("Unable to read the selected file.");
+            setMessage(
+                "Unable to read the selected file."
+            );
         };
 
         reader.readAsDataURL(file);
 
-        // Allow selecting the same file again
         event.target.value = "";
     };
 
@@ -739,6 +742,7 @@ const Meeting = () => {
         document.body.removeChild(link);
     };
 
+    // Leave meeting
     const leaveMeeting = () => {
         if (screenStreamRef.current) {
             screenStreamRef.current
@@ -758,158 +762,339 @@ const Meeting = () => {
     };
 
     return (
-        <div>
-            <h1>Meeting Room</h1>
+        <div className="meeting-page">
 
-            <p>
-                Room ID: <strong>{roomId}</strong>
-            </p>
-
-            <p>
-                Participants:{" "}
-                <strong>{participants}</strong>
-            </p>
-
-            {message && <p>{message}</p>}
-
-            <hr />
-
-            <h2>Your Video</h2>
-
-            {localPreviewStream ? (
-                <VideoPlayer
-                    stream={localPreviewStream}
-                    muted={true}
-                />
-            ) : (
-                <p>Starting camera...</p>
-            )}
-
-            <br />
-
-            <button onClick={toggleCamera}>
-                {cameraOn
-                    ? "📹 Turn Camera Off"
-                    : "📹 Turn Camera On"}
-            </button>
-
-            {" "}
-
-            <button onClick={toggleMicrophone}>
-                {micOn
-                    ? "🎤 Mute Microphone"
-                    : "🎤 Unmute Microphone"}
-            </button>
-
-            {" "}
-
-            {!screenSharing ? (
-                <button onClick={startScreenSharing}>
-                    🖥️ Share Screen
-                </button>
-            ) : (
-                <button onClick={stopScreenSharing}>
-                    🛑 Stop Sharing
-                </button>
-            )}
-
-            <hr />
-
-            <h2>📁 File Sharing</h2>
-
-            <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-            />
-
-            <button onClick={selectFile}>
-                📎 Select & Send File
-            </button>
-
-            <p>
-                Maximum file size: 500 KB
-            </p>
-
-            {receivedFiles.length > 0 && (
+            {/* Header */}
+            <header className="meeting-header">
                 <div>
-                    <h3>📥 Received Files</h3>
+                    <p className="meeting-label">
+                        REAL-TIME COMMUNICATION
+                    </p>
 
-                    {receivedFiles.map((file) => (
-                        <div key={file.id}>
-                            <span>
-                                {file.name} (
-                                {Math.round(
-                                    file.size / 1024
-                                )} KB)
-                            </span>
+                    <h1>Meeting Room</h1>
 
-                            {" "}
+                    <div className="meeting-room-info">
+                        <span>
+                            Room ID:
+                        </span>
 
+                        <strong>
+                            {roomId}
+                        </strong>
+                    </div>
+                </div>
+
+                <div className="participant-badge">
+                    <span className="online-dot"></span>
+
+                    <span>
+                        {participants}{" "}
+                        {participants === 1
+                            ? "Participant"
+                            : "Participants"}
+                    </span>
+                </div>
+            </header>
+
+            {/* Status Message */}
+            {message && (
+                <div className="status-message">
+                    <span>●</span>
+
+                    <p>{message}</p>
+                </div>
+            )}
+
+            {/* Main Content */}
+            <main className="meeting-content">
+
+                {/* Video Section */}
+                <section className="video-section">
+
+                    <div className="section-heading">
+                        <div>
+                            <h2>Video Call</h2>
+
+                            <p>
+                                Connect with participants in real time
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="video-grid">
+
+                        {/* Local Video */}
+                        <div className="video-card local-video-card">
+                            <div className="video-card-header">
+                                <span>
+                                    You
+                                </span>
+
+                                <span className="video-status">
+                                    {cameraOn
+                                        ? "Camera On"
+                                        : "Camera Off"}
+                                </span>
+                            </div>
+
+                            <div className="video-container">
+                                {localPreviewStream ? (
+                                    <VideoPlayer
+                                        stream={localPreviewStream}
+                                        muted={true}
+                                    />
+                                ) : (
+                                    <div className="video-placeholder">
+                                        Starting camera...
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Remote Videos */}
+                        {Object.keys(remoteStreams).map(
+                            (socketId) => (
+                                <div
+                                    className="video-card"
+                                    key={socketId}
+                                >
+                                    <div className="video-card-header">
+                                        <span>
+                                            Participant
+                                        </span>
+
+                                        <span className="video-status">
+                                            Connected
+                                        </span>
+                                    </div>
+
+                                    <div className="video-container">
+                                        <VideoPlayer
+                                            stream={
+                                                remoteStreams[
+                                                    socketId
+                                                ]
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            )
+                        )}
+
+                        {/* Waiting State */}
+                        {Object.keys(remoteStreams).length ===
+                            0 && (
+                            <div className="waiting-card">
+                                <div className="waiting-icon">
+                                    👥
+                                </div>
+
+                                <h3>
+                                    Waiting for participants
+                                </h3>
+
+                                <p>
+                                    Share the meeting room ID with
+                                    others to join the call.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Controls */}
+                    <div className="control-bar">
+
+                        <button
+                            className={`control-button ${
+                                !cameraOn
+                                    ? "control-button-off"
+                                    : ""
+                            }`}
+                            onClick={toggleCamera}
+                        >
+                            {cameraOn
+                                ? "📹 Camera"
+                                : "📹 Camera Off"}
+                        </button>
+
+                        <button
+                            className={`control-button ${
+                                !micOn
+                                    ? "control-button-off"
+                                    : ""
+                            }`}
+                            onClick={toggleMicrophone}
+                        >
+                            {micOn
+                                ? "🎤 Microphone"
+                                : "🎤 Muted"}
+                        </button>
+
+                        {!screenSharing ? (
                             <button
-                                onClick={() =>
-                                    downloadFile(file)
+                                className="control-button"
+                                onClick={
+                                    startScreenSharing
                                 }
                             >
-                                ⬇️ Download
+                                🖥️ Share Screen
                             </button>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ) : (
+                            <button
+                                className="control-button control-button-off"
+                                onClick={
+                                    stopScreenSharing
+                                }
+                            >
+                                🛑 Stop Sharing
+                            </button>
+                        )}
 
-            <hr />
+                        <button
+                            className="leave-button"
+                            onClick={leaveMeeting}
+                        >
+                            Leave Meeting
+                        </button>
+                    </div>
+                </section>
 
-            <h2>🎨 Collaborative Whiteboard</h2>
+                {/* Tools */}
+                <div className="tools-grid">
 
-            <canvas
-                ref={canvasRef}
-                width={800}
-                height={500}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                style={{
-                    border: "2px solid black",
-                    backgroundColor: "white",
-                    cursor: "crosshair",
-                    display: "block",
-                }}
-            />
+                    {/* File Sharing */}
+                    <section className="feature-card">
 
-            <br />
-
-            <button onClick={clearWhiteboard}>
-                🧹 Clear Whiteboard
-            </button>
-
-            <h2>Remote Videos</h2>
-
-            {Object.keys(remoteStreams).length === 0 ? (
-                <p>
-                    Waiting for other participants...
-                </p>
-            ) : (
-                <div>
-                    {Object.entries(remoteStreams).map(
-                        ([socketId, stream]) => (
-                            <div key={socketId}>
-                                <VideoPlayer
-                                    stream={stream}
-                                />
+                        <div className="feature-card-header">
+                            <div className="feature-icon">
+                                📁
                             </div>
-                        )
-                    )}
+
+                            <div>
+                                <h2>File Sharing</h2>
+
+                                <p>
+                                    Share small files with participants
+                                </p>
+                            </div>
+                        </div>
+
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            onChange={handleFileChange}
+                            style={{
+                                display: "none",
+                            }}
+                        />
+
+                        <button
+                            className="primary-action"
+                            onClick={selectFile}
+                        >
+                            📎 Select & Send File
+                        </button>
+
+                        <p className="feature-note">
+                            Maximum file size: 500 KB
+                        </p>
+
+                        {receivedFiles.length > 0 && (
+                            <div className="received-files">
+                                <h3>
+                                    📥 Received Files
+                                </h3>
+
+                                {receivedFiles.map(
+                                    (file) => (
+                                        <div
+                                            className="file-item"
+                                            key={file.id}
+                                        >
+                                            <div>
+                                                <strong>
+                                                    {file.name}
+                                                </strong>
+
+                                                <span>
+                                                    {Math.round(
+                                                        file.size /
+                                                            1024
+                                                    )}{" "}
+                                                    KB
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                className="small-action"
+                                                onClick={() =>
+                                                    downloadFile(
+                                                        file
+                                                    )
+                                                }
+                                            >
+                                                ⬇️ Download
+                                            </button>
+                                        </div>
+                                    )
+                                )}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Whiteboard */}
+                    <section className="feature-card whiteboard-section">
+
+                        <div className="feature-card-header">
+                            <div className="feature-icon">
+                                🎨
+                            </div>
+
+                            <div>
+                                <h2>
+                                    Collaborative Whiteboard
+                                </h2>
+
+                                <p>
+                                    Draw and collaborate in real time
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="whiteboard-wrapper">
+                            <canvas
+                                ref={canvasRef}
+                                width={800}
+                                height={500}
+                                onMouseDown={
+                                    startDrawing
+                                }
+                                onMouseMove={draw}
+                                onMouseUp={
+                                    stopDrawing
+                                }
+                                onMouseLeave={
+                                    stopDrawing
+                                }
+                                className="whiteboard-canvas"
+                                style={{
+                                    border: "2px solid black",
+                                    backgroundColor: "white",
+                                    cursor: "crosshair",
+                                    display: "block",
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            className="secondary-action"
+                            onClick={clearWhiteboard}
+                        >
+                            🧹 Clear Whiteboard
+                        </button>
+                    </section>
                 </div>
-            )}
-
-            <br />
-
-            <button onClick={leaveMeeting}>
-                Leave Meeting
-            </button>
+            </main>
         </div>
     );
 };
