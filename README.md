@@ -200,9 +200,7 @@ CodeAlpha_RealTimeCommunicationApp/
 
     ```bash
     git clone https://github.com/krishnamahatma21/CodeAlpha_RealTimeCommunicationApp.git
-    ```
-
-    ```bash
+    
     cd CodeAlpha_RealTimeCommunicationApp
     ```
 
