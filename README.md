@@ -198,11 +198,9 @@ CodeAlpha_RealTimeCommunicationApp/
 
 ### Clone the Repository
 
-    ```bash
     git clone https://github.com/krishnamahatma21/CodeAlpha_RealTimeCommunicationApp.git
     
     cd CodeAlpha_RealTimeCommunicationApp
-    ```
 
 ## 🔧 Backend Setup
 
